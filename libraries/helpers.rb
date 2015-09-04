@@ -48,7 +48,7 @@ module DeliveryCluster
     #
     # To add more recipes, simply include them to the array.
     def default_cluster_recipes
-      ['delivery-cluster::pkg_repo_management']
+      ['delivery-cluster::base', 'delivery-cluster::pkg_repo_management']
     end
 
     # Provisioning Driver Instance
