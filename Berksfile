@@ -18,3 +18,11 @@ cookbook 'delivery_build',
 
 cookbook 'delivery-base',
   git: 'https://github.com/chef-cookbooks/delivery-base.git'
+
+cookbook 'packagecloud',
+  git: 'https://github.com/afiune/packagecloud-cookbook.git',
+  branch: 'afiune/force_os'
+
+cookbook 'runit',
+  git: 'https://github.com/afiune/runit.git',
+  branch: 'afiune/make-it-work-in-oel'
