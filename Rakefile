@@ -90,9 +90,22 @@ def validate_environment
   end
 end
 
+def chef_apply(recipe)
+  succeed = system "chef exec chef-apply recipes/#{recipe}.rb"
+  fail 'Failed executing ChefApply run' unless succeed
+end
+
+def chefdk_version
+  @chef_dk_version ||= `chef -v`.split("\n").first.split.last
+rescue
+  puts 'ChefDk was not found'.red
+  puts 'Please install it from: https://downloads.chef.io/chef-dk'.yellow
+  raise
+end
+
 def chef_zero(recipe)
   validate_environment
-  succeed = system "bundle exec chef-client -z -o delivery-cluster::#{recipe} -E #{ENV['CHEF_ENV']}"
+  succeed = system "chef exec chef-client -z -o delivery-cluster::#{recipe} -E #{ENV['CHEF_ENV']}"
   fail 'Failed executing ChefZero run' unless succeed
 end
 
@@ -312,15 +325,21 @@ namespace :setup do
   end
 
   desc 'Install all the prerequisites on you system'
-  task :prerequisites, [:cache] do |_t, args|
-    opts = ''
-    # Assemble Gem dependencies on a `cache` directory if specified
-    opts = "--path #{args[:cache]}" if args[:cache]
-    msg 'Install rubygem dependencies locally'
-    system "bundle install #{opts}"
+  task :prerequisites do
+    msg 'Verifying ChefDK version'
+    if Gem::Version.new(chefdk_version) < Gem::Version.new('0.10.0')
+      puts "Running ChefDK version #{chefdk_version}".red
+      puts 'The required version is >= 0.10.0'.red
+      fail
+    else
+      puts "Running ChefDK version #{chefdk_version}".green
+    end
+
+    msg 'Configuring the provisioner node'
+    chef_apply 'provisioner'
 
     msg 'Download and vendor the necessary cookbooks locally'
-    system 'bundle exec berks vendor cookbooks'
+    system 'chef exec berks vendor cookbooks'
 
     msg "Current chef environment => #{ENV['CHEF_ENV_FILE']}"
     validate_environment
@@ -381,12 +400,10 @@ namespace :maintenance do
     Rake::Task['setup:cluster'].invoke
   end
 
-  desc 'Update gem & cookbook dependencies'
+  desc 'Update cookbook dependencies'
   task :update do
-    msg 'Updating gems locally'
-    system 'bundle update'
     msg 'Updating cookbooks locally'
-    system 'bundle exec berks update'
+    system 'chef exec berks update'
   end
 
   desc 'Clean the cache'

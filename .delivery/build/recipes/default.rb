@@ -19,7 +19,7 @@
 #
 
 # Gems for our tests
-%w{watir-webdriver phantomjs}.each do |g|
+%w{watir-webdriver phantomjs artifactory}.each do |g|
   chef_gem g
 end
 
@@ -31,7 +31,7 @@ include_recipe 'build-essential::default'
 package 'libxml2-dev' unless platform_family?('windows')
 
 include_recipe 'delivery-sugar-extras::default'
-include_recipe 'delivery-red-pill::default'
+include_recipe 'delivery-matrix::default'
 include_recipe 'delivery-truck::default'
 
 # Temporal cache directory to store delivery-cluster-data

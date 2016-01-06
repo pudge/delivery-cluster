@@ -1,6 +1,8 @@
 #
-# Cookbook Name:: build
-# Recipe:: provision
+# Cookbook Name:: delivery-cluster
+# Recipe:: provisioner
+#
+# Author:: Salim Afiune (<afiune@chef.io>)
 #
 # Copyright:: Copyright (c) 2015 Chef Software, Inc.
 # License:: Apache License, Version 2.0
@@ -18,8 +20,9 @@
 # limitations under the License.
 #
 
-# By including this recipe we trigger a matrix of acceptance envs specified
-# in the node attribute node['delivery-matrix']['acceptance']['matrix']
-if node['delivery']['change']['stage'] == 'acceptance'
-  include_recipe 'delivery-matrix::provision'
+# Installing chef-provisioning drivers
+%w(ssh vagrant aws).each do |driver|
+  chef_gem "chef-provisioning-#{driver}"
 end
+
+chef_gem 'knife-push'
